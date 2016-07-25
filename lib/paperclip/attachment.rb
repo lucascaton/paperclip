@@ -50,7 +50,8 @@ module Paperclip
     # +url+ - a relative URL of the attachment. This is interpolated using +interpolator+
     # +path+ - where on the filesystem to store the attachment. This is interpolated using +interpolator+
     # +styles+ - a hash of options for processing the attachment. See +has_attached_file+ for the details
-    # +only_process+ - style args to be run through the post-processor. This defaults to the empty list
+    # +only_process+ - style args to be run through the post-processor. This defaults to the empty list (which is 
+    #                  a special case that indicates all styles should be processed)
     # +default_url+ - a URL for the missing image
     # +default_style+ - the style to use when an argument is not specified e.g. #url, #path
     # +storage+ - the storage mechanism. Defaults to :filesystem
@@ -348,7 +349,7 @@ module Paperclip
 
     # Returns true if a file has been assigned.
     def file?
-      !original_filename.blank?
+      original_filename.present?
     end
 
     alias :present? :file?
@@ -501,7 +502,7 @@ module Paperclip
 
       instance.run_paperclip_callbacks(:post_process) do
         instance.run_paperclip_callbacks(:"#{name}_post_process") do
-          unless @options[:check_validity_before_processing] && instance.errors.any?
+          if !@options[:check_validity_before_processing] || !instance.errors.any?
             post_process_styles(*style_args)
           end
         end
